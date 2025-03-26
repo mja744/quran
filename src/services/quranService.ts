@@ -124,7 +124,13 @@ async function fetchWithCache<T>(url: string, fallbackData: T): Promise<T> {
   }
   
   try {
-    const response = await fetch(url, { timeout: 5000 });
+    // Use the custom fetch with timeout
+    // Type cast to add the timeout property
+    const fetchOptions = { 
+      timeout: 5000 
+    } as RequestInit & { timeout: number };
+    
+    const response = await fetch(url, fetchOptions);
     
     if (!response.ok) {
       console.warn(`API request failed with status ${response.status}, using fallback data`);
