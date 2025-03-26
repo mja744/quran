@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 // Types for API responses
@@ -28,8 +27,8 @@ export interface Surah {
   ayat: number;
 }
 
-// Fallback data for when the API fails
-const fallbackReciters: Reciter[] = [
+// Hardcoded data for Islam Sobhi and popular reciters
+const hardcodedReciters: Reciter[] = [
   {
     id: 1,
     name: "Islam Sobhi",
@@ -80,14 +79,49 @@ const fallbackReciters: Reciter[] = [
       }
     ],
     Server: "https://server8.mp3quran.net/afs"
+  },
+  {
+    id: 4,
+    name: "Maher Al Muaiqly",
+    arabic_name: "ماهر المعيقلي",
+    count: 114,
+    rewaya: "Hafs A'n Assem",
+    moshaf: [
+      {
+        id: 4,
+        name: "Quran",
+        surah_list: "1-114",
+        surah_total: "114",
+        server: "https://server12.mp3quran.net/maher"
+      }
+    ],
+    Server: "https://server12.mp3quran.net/maher"
+  },
+  {
+    id: 5,
+    name: "Mahmoud Khalil Al-Hussary",
+    arabic_name: "محمود خليل الحصري",
+    count: 114,
+    rewaya: "Hafs A'n Assem",
+    moshaf: [
+      {
+        id: 5,
+        name: "Quran",
+        surah_list: "1-114",
+        surah_total: "114",
+        server: "https://server13.mp3quran.net/husr"
+      }
+    ],
+    Server: "https://server13.mp3quran.net/husr"
   }
 ];
 
-const fallbackSurahs: Surah[] = Array.from({ length: 114 }, (_, i) => ({
+// All surahs with their names
+const hardcodedSurahs: Surah[] = Array.from({ length: 114 }, (_, i) => ({
   id: i + 1,
   name: `Surah ${i + 1}`,
   arabic_name: getSurahArabicName(i + 1),
-  ayat: 0
+  ayat: getSurahAyatCount(i + 1)
 }));
 
 // Helper function to get Arabic surah names
@@ -110,74 +144,24 @@ function getSurahArabicName(index: number): string {
   return index > 0 && index <= arabicNames.length ? `سورة ${arabicNames[index - 1]}` : `سورة ${index}`;
 }
 
-// Cache for storing API responses
-const cache: Record<string, { data: any; timestamp: number }> = {};
-const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
-
-// Helper function to cache API responses
-async function fetchWithCache<T>(url: string, fallbackData: T): Promise<T> {
-  const now = Date.now();
+// Helper function to get known ayat counts for each surah
+function getSurahAyatCount(index: number): number {
+  const ayatCounts = [
+    7, 286, 200, 176, 120, 165, 206, 75, 129, 109,  // 1-10
+    123, 111, 43, 52, 99, 128, 111, 110, 98, 135,   // 11-20
+    112, 78, 118, 64, 77, 227, 93, 88, 69, 60,      // 21-30
+    34, 30, 73, 54, 45, 83, 182, 88, 75, 85,        // 31-40
+    54, 53, 89, 59, 37, 35, 38, 29, 18, 45,         // 41-50
+    60, 49, 62, 55, 78, 96, 29, 22, 24, 13,         // 51-60
+    14, 11, 11, 18, 12, 12, 30, 52, 52, 44,         // 61-70
+    28, 28, 20, 56, 40, 31, 50, 40, 46, 42,         // 71-80
+    29, 19, 36, 25, 22, 17, 19, 26, 30, 20,         // 81-90
+    15, 21, 11, 8, 8, 19, 5, 8, 8, 11,             // 91-100
+    11, 8, 3, 9, 5, 4, 7, 3, 6, 3,                // 101-110
+    5, 4, 5, 6                                     // 111-114
+  ];
   
-  // Return cached data if it exists and is not expired
-  if (cache[url] && now - cache[url].timestamp < CACHE_DURATION) {
-    return cache[url].data as T;
-  }
-  
-  try {
-    // Use the custom fetch with timeout
-    // Type cast to add the timeout property
-    const fetchOptions = { 
-      timeout: 5000 
-    } as RequestInit & { timeout: number };
-    
-    const response = await fetch(url, fetchOptions);
-    
-    if (!response.ok) {
-      console.warn(`API request failed with status ${response.status}, using fallback data`);
-      return fallbackData;
-    }
-    
-    const data = await response.json();
-    
-    // Cache the response
-    cache[url] = {
-      data,
-      timestamp: now
-    };
-    
-    return data as T;
-  } catch (error) {
-    console.error("API request failed:", error);
-    console.log("Using fallback data instead");
-    return fallbackData;
-  }
-}
-
-// API functions
-export async function getReciters(): Promise<Reciter[]> {
-  try {
-    const response = await fetchWithCache<{ reciters: Reciter[] }>(
-      "https://www.mp3quran.net/api/v3/reciters?language=ar",
-      { reciters: fallbackReciters }
-    );
-    return response.reciters;
-  } catch (error) {
-    console.error("Failed to fetch reciters:", error);
-    return fallbackReciters;
-  }
-}
-
-export async function getSurahs(): Promise<Surah[]> {
-  try {
-    const response = await fetchWithCache<{ surahs: Surah[] }>(
-      "https://www.mp3quran.net/api/v3/suwar?language=ar",
-      { surahs: fallbackSurahs }
-    );
-    return response.surahs;
-  } catch (error) {
-    console.error("Failed to fetch surahs:", error);
-    return fallbackSurahs;
-  }
+  return index > 0 && index <= ayatCounts.length ? ayatCounts[index - 1] : 0;
 }
 
 // Helper function to get surah audio URL
@@ -216,4 +200,17 @@ export function findIslamSobhi(reciters: Reciter[]): Reciter | undefined {
     r.name.toLowerCase().includes("islam sobhi") || 
     (r.arabic_name && r.arabic_name.includes("إسلام صبحي"))
   );
+}
+
+// API functions - now using hardcoded data instead of failing API
+export async function getReciters(): Promise<Reciter[]> {
+  // Since the API is failing, we'll use our hardcoded data
+  console.log("Using hardcoded reciters data instead of API");
+  return Promise.resolve(hardcodedReciters);
+}
+
+export async function getSurahs(): Promise<Surah[]> {
+  // Since the API is failing, we'll use our hardcoded data
+  console.log("Using hardcoded surahs data instead of API");
+  return Promise.resolve(hardcodedSurahs);
 }
