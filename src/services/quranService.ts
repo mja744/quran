@@ -41,7 +41,7 @@ const hardcodedReciters: Reciter[] = [
         name: "Quran",
         surah_list: "1-114",
         surah_total: "114",
-        server: "https://islamsobhi.com/Quran"
+        server: "https://server14.mp3quran.net/islam/Rewayat-Hafs-A-n-Assem/"
       }
     ],
     Server: "https://islamsobhi.com/Quran"
