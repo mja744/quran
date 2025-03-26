@@ -41,10 +41,10 @@ const hardcodedReciters: Reciter[] = [
         name: "Quran",
         surah_list: "1-114",
         surah_total: "114",
-        server: "https://server10.mp3quran.net/sobhi"
+        server: "https://islamsobhi.com/Quran"
       }
     ],
-    Server: "https://server10.mp3quran.net/sobhi"
+    Server: "https://islamsobhi.com/Quran"
   },
   {
     id: 2,
@@ -166,7 +166,13 @@ function getSurahAyatCount(index: number): number {
 
 // Helper function to get surah audio URL
 export function getSurahAudioUrl(server: string, surahId: number): string {
-  // Ensure surah ID is padded with leading zeros to 3 digits
+  // Special case for Islam Sobhi
+  if (server.includes("islamsobhi.com")) {
+    // Islam Sobhi's website uses different format
+    return `${server}/${surahId.toString().padStart(3, '0')}.mp3`;
+  }
+  
+  // Default format for other reciters
   const paddedSurahId = surahId.toString().padStart(3, '0');
   return `${server}/${paddedSurahId}.mp3`;
 }
